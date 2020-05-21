@@ -1,0 +1,46 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile('io.dropwizard:dropwizard-core:0.8.4')	
+	compile('org.json:json:20090211')
+	compile files("${System.properties['java.home']}/../lib/tools.jar")    
+    compile 'org.elasticsearch.client:elasticsearch-rest-high-level-client:6.2.4'
+    compile group: 'org.elasticsearch.client', name: 'transport', version: '6.2.3'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '6.4.0.jre8'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+    compile fileTree(dir: 'lib', include: ['*.jar'])
+    // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
+	compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.1.1'
+    
+    
+}
+
+version = '1.0'
+
+mainClassName = 'Application.KafkaProducerApp'
+
+task copyToLib( type: Copy ) {
+    into "$buildDir/libs/lib"
+    from configurations.runtime
+}
+
+startScripts 
+{
+doLast
+	{ // Remove too-long-classpath and use wildcard ( works for java 6 and above only) 
+	windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*', 'set CLASSPATH=.;%APP_HOME%/lib/*') 
+	}
+}
+jar { 
+	dependsOn copyToLib	
+}
